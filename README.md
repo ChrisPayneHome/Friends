@@ -7,7 +7,7 @@
 1. [Introduction](#introduction)
 2. [Data](#data)
 3. [Markdown](#markdown)
-4. [Jupyter Notebook](#notebook)
+4. [Notebook](#notebook)
 4. [Model](#model)
 
 

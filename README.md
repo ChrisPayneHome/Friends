@@ -23,9 +23,9 @@ This project uses data from a 2020 edition of tidy tuesday that can be found <a 
 
 The .Rmd and accompanying .html files contain the un-knitted and knitted versions of the Rmarkdown file containing all the R code written for this project. This code was written to identify and visualise the subset of the data used to train the model. Then to actually extract and write this data into the corpus.csv file.
 
-## Jupyter Notebook
+## Notebook
 
-This file contains the vast majority of the code written for the project. Within this workbook I import the corpus data mentioned above, clean and prepare it for the model, create and train the model using this data, and generate the scene. 
+This Jupyter Notebook contains the vast majority of the code written for the project. Within this workbook I import the corpus data mentioned above, clean and prepare it for the model, create and train the model using this data, and generate the scene. 
 
 ## Model
 

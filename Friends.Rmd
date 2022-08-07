@@ -1,0 +1,150 @@
+---
+title: "Friends"
+author: "Christian"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Synthetic Friends Script
+
+This document details the work conducted in R for this project. The primary aim of this work here is to identify the cohort of scenes used for the text model and to produce the visualisations for the article.
+
+## Data
+
+First we'll need to setup the libraries we'll need and import the data. This data is the friends_info.csv file from a [2020 edition](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-09-08/friends_info.csv) of tidy tuesday.
+
+```{r data, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(rjson)
+library(lubridate)
+
+data <- read_csv('Data/friends_info.csv')
+head(data)
+
+```
+
+## Season quality
+
+The next step is to begin to explore the episode and season quality using IMDB ratings. Given the closeness in ratings, perhaps a better method is to look at the individual episodes instead.
+
+```{r season-quality-viz, message=FALSE, warning=FALSE, fig.align='center'}
+
+
+qual_season <- data %>%
+  
+  group_by(season) %>%
+  
+  summarise(avg_rating = mean(imdb_rating)) %>%
+  
+  mutate(season = as.factor(paste("Season", season, sep = " "))) %>%
+  
+  arrange(desc(avg_rating))
+
+
+season_plot <- ggplot(qual_season, aes(y = fct_reorder(season, avg_rating), x = avg_rating, fill = season)) +
+  
+  geom_col() +
+  
+  scale_x_continuous(
+    
+    expand = c(0,0)
+    , limits = c(0,9)
+    
+  ) +
+  
+  labs(
+    
+    x = "Average Rating"
+    , y = NULL
+    , title = "Friends Quality by Season"
+    , subtitle = "Average IMDB rating, by Friends season"
+    , caption = "Source: Emil Hvitfeldt"
+      
+  ) +
+  
+  theme_classic() +
+  
+  theme(
+    
+    axis.line.x.bottom = element_blank()
+    , axis.ticks.x.bottom = element_blank()
+    , axis.ticks.y.left = element_blank()
+    , panel.grid.major.x = element_line()
+    , legend.position = "none"
+    
+  ) 
+
+
+ggsave("Images/season_plot.png", height = 4.47, width = 7.2)
+
+season_plot
+
+```
+
+
+## Episode Quality
+
+Given the lack of any significant difference between the ratings of individual seasons, we'll instead focus on the individual episodes instead. After identifying the top 10 rated episodes, we'll use those for our analysis. As there are ties in the IMDB rating, we're actually going to be working with 12 episodes instead of the requested 10.
+
+```{r episode-quality-viz }
+
+episode_quality <- data %>%
+  
+  top_n(10, imdb_rating) %>%
+  
+  mutate(air_date = year(air_date)) %>%
+  
+  select(-directed_by, -written_by, -us_views_millions) %>%
+  
+  arrange(desc(imdb_rating))
+  
+  
+
+knitr::kable(
+  
+  episode_quality
+  
+  , align = 'lllrr'
+  
+  , col.names = c(
+    
+    "Season"
+    , "Episode No."
+    , "Episode Title"
+    , "Year Aired"
+    , "IMDB Rating")
+  
+  )
+
+
+```
+
+
+## Extract episodes
+
+Now that we have the episodes, we'll now have to extract these so we can use them in our Jupyter Notebook. We'll be doing this by joining the 'friends_info.csv' and 'friends.csv' files together to create a 'corpus_data.csv' file that we'll load into our python environment.
+
+
+```{r episode-extraction, message=FALSE, warning=FALSE}
+
+
+
+corpus_data <- episode_quality %>%
+  
+  left_join(
+    
+    read_csv('Data/friends.csv')
+    , by = c('season', 'episode')
+  
+  )
+
+write.csv(corpus_data, 'Data/corpus_data.csv')
+
+```
